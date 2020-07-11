@@ -12,20 +12,24 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.impute import SimpleImputer
 import missingno as msno
 
+def wrmse(Y_pred, Y_true, verbose=True):
+    w = Y_true / Y_true.sum(axis=0)
+    wrmse = np.sqrt((w * ((Y_pred - Y_true) ** 2)).sum())
 
-from WeightedRMSE import wrmse
+    if verbose:
+        print('RMSE=%f' % (np.sqrt(((Y_pred - Y_true) ** 2).mean())))
+        print('WRMSE=%f' % wrmse)
+
+    return wrmse
 
 print('data loading...')
 
 column_names = ['year', 'doy', 'hr', 'min', 'Np', 'Vp', 'Tp', 'B_gsm_x', 'B_gsm_y', 'B_gsm_z', 'Bt', 'Kp']
 #data = pd.read_csv(r'D:\charmgil\2019space_data\new_data_3hour_stats.csv',  delimiter=',')
-data_tr = pd.read_csv('../organized_data/new_data_3hour_stats.csv',  delimiter=',')
-data_ts = pd.read_csv('../organized_data/new_data_long_3hour_stats_with_nan.csv',  delimiter=',')
+data = pd.read_csv('/new_data_3hour_stats.csv',  delimiter=',')
 
-'''
 data_tr = data[data['year'] <= 2012]    ## originally 2010
 data_ts = data[data['year'] > 2012]     ## originally 2010
-'''
 
 '''
 for val in range(0,10):
@@ -37,7 +41,7 @@ for val in range(0,10):
 
 data_tr = data_tr[data_tr.columns[4:]]
 print(data_tr)
-data_ts = data_ts[data_ts.columns[2:]]
+data_ts = data_ts[data_ts.columns[4:]]
 print(data_ts)
 
 for cols in range(0,len(data_tr.columns)):
@@ -69,11 +73,12 @@ data_ts['B_gsm_z'] = imputer.fit_transform(data_ts.B_gsm_z.values.reshape(-1, 1)
 data_ts['Bt'] = imputer.fit_transform(data_ts.Bt.values.reshape(-1, 1))
 '''
 
+'''
 data_tr.to_csv('../organized_data/data_tr_nan.csv')
 data_ts.to_csv('../organized_data/data_ts_nan.csv')
 mean_list = {}
 
-'''
+
 for i in range(0, 8):
     mean_list[str(data_tr.columns[i])] = np.mean(data_tr[data_tr.columns[i]])
     print('mean: ', mean_list[str(data_tr.columns[i])])
@@ -216,5 +221,3 @@ Y_ts_pred_svr = Y_ts_pred_svr.reshape(len(Y_ts_pred_svr),1)
 
 print('RESULT(wrmse):')
 wrmse(Y_ts_pred_svr,Y_ts)
-
-
